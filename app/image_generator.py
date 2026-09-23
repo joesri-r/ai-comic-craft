@@ -121,30 +121,24 @@ def _try_ai_story_generator(prompt: str, filepath: str) -> bool:
     clean_p = prompt[:300].strip()
     encoded_prompt = urllib.parse.quote(clean_p)
 
-    for attempt in range(1, 3):
-        for model in models:
-            try:
-                seed = (int(time.time() * 1000) + attempt * 13) % 100000
-                url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=512&height=512&model={model}&nologo=true&seed={seed}"
-                req = urllib.request.Request(
-                    url,
-                    headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ComicCraft/1.0"}
-                )
-                with urllib.request.urlopen(req, timeout=35) as resp:
-                    data = resp.read()
-                    if data and len(data) > 1000:
-                        with open(filepath, "wb") as f:
-                            f.write(data)
-                        print(f"[image_generator] SUCCESS: AI story scene image generated ({model}, {len(data)} bytes).")
-                        return True
-            except Exception as e:
-                err = str(e)
-                if "429" in err or "Too Many Requests" in err:
-                    backoff = 2.0 * attempt
-                    print(f"[image_generator] Pollinations rate limit ({model}). Backing off for {backoff:.1f}s...")
-                    time.sleep(backoff)
-                else:
-                    print(f"[image_generator] Story generator note ({model}): {e}")
+    for model in models:
+        try:
+            seed = int(time.time() * 1000) % 100000
+            url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=512&height=512&model={model}&nologo=true&seed={seed}"
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ComicCraft/1.0"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = resp.read()
+                if data and len(data) > 1000:
+                    with open(filepath, "wb") as f:
+                        f.write(data)
+                    print(f"[image_generator] SUCCESS: AI story scene image generated ({model}, {len(data)} bytes).")
+                    return True
+        except Exception as e:
+            print(f"[image_generator] Story generator note ({model}): {e}")
+            # Fail fast, do not sleep, to avoid Vercel 10s timeout
     return False
 
 
