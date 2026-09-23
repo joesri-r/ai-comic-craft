@@ -266,7 +266,7 @@ def apply_comic_filter(image_bytes: bytes, art_style: str = "Comic Book") -> byt
 
     except Exception as e:
         print(f"[external_images] Comic filter error: {e}")
-        return image_bytes
+        return None
 
 
 def fetch_and_stylize_external_image(
@@ -320,15 +320,34 @@ def fetch_and_stylize_external_image(
     if not raw_bytes:
         raw_bytes = search_public_scenery_image(story_keywords)
         if raw_bytes: source_name = "Public Scenery"
+        
+    # Check if a 403/500 HTML page snuck through (which causes broken images)
+    if raw_bytes and b"<html" in raw_bytes.lower()[:500]:
+        print("[external_images] Warning: Fetched bytes are HTML, not an image. Discarding.")
+        raw_bytes = None
+
+    # 7. Final generic fallback to guarantee an image (Wikimedia Commons)
+    if not raw_bytes:
+        print(f"[external_images] Specific searches failed. Using generic fallback...")
+        import random
+        generic_keywords = ["scenic landscape", "beautiful scenery", "fantasy landscape", "cityscape", "forest scenery"]
+        fallback_query = random.choice(generic_keywords)
+        raw_bytes = search_wikimedia_image(fallback_query)
+        if raw_bytes: source_name = "Wikimedia Commons (Generic)"
 
     if not raw_bytes:
-        print(f"[external_images] No external image found for story: '{story_keywords}'")
+        print(f"[external_images] No external image found for story: '{story_keywords}' even with fallbacks")
         return False
 
     # Apply comic styling filter
     try:
         print(f"[external_images] Applying Comic Book filter to {source_name} image matching '{story_keywords}'...")
         styled_bytes = apply_comic_filter(raw_bytes, art_style)
+        
+        if not styled_bytes:
+            print(f"[external_images] Comic filter rejected the image bytes (likely invalid image or HTML error page).")
+            return False
+            
         with open(filepath, "wb") as f:
             f.write(styled_bytes)
         print(f"[external_images] SUCCESS: Stylized {source_name} story image saved ({len(styled_bytes)} bytes)!")
