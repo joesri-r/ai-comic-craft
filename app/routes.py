@@ -11,10 +11,13 @@ from app.image_generator import generate_image
 from app.layout_builder import build_comic_layout
 from app.exporters import save_pdf
 
+from pathlib import Path
+
 router = APIRouter()
 
-# Setup templates
-templates = Jinja2Templates(directory="templates")
+# Setup templates with absolute path (required for Vercel serverless)
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def _generate_all_panel_images(outline, character_description, art_style):
     """Generate images for all panels with concurrency control and staggering to prevent 429s."""

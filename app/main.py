@@ -19,8 +19,11 @@ except ValueError as e:
 
 app = FastAPI(title="ComicCraft", description="AI Comic Story Creator", version="1.0.0")
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files with absolute path (required for Vercel serverless)
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
+static_dir = str(BASE_DIR / "static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Import routes here to avoid circular imports
 from app.routes import router
