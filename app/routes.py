@@ -66,14 +66,28 @@ async def generate_comic_html(
         layout = build_comic_layout(story, generated_images)
         
         # 5. Save PDF
-        pdf_filename = save_pdf(layout)
+        pdf_filepath = save_pdf(layout)
+        
+        # 6. Convert PDF to base64 for download link
+        import base64
+        import os
+        try:
+            with open(pdf_filepath, "rb") as f:
+                pdf_b64 = base64.b64encode(f.read()).decode("utf-8")
+                pdf_data_uri = f"data:application/pdf;base64,{pdf_b64}"
+            pdf_filename = os.path.basename(pdf_filepath)
+        except Exception as e:
+            print(f"Error encoding PDF base64: {e}")
+            pdf_data_uri = ""
+            pdf_filename = "comic.pdf"
         
         return templates.TemplateResponse(
             request,
             "comic_preview.html",
             {
                 "panels": layout,
-                "pdf_filename": pdf_filename
+                "pdf_filename": pdf_filename,
+                "pdf_data_uri": pdf_data_uri
             }
         )
         

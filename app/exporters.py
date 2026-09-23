@@ -1,5 +1,6 @@
 import os
 import time
+import tempfile
 from fpdf import FPDF
 
 def save_pdf(layout: list) -> str:
@@ -7,11 +8,13 @@ def save_pdf(layout: list) -> str:
     Generate a PDF from the comic layout using FPDF2.
     
     :param layout: List of dictionaries containing panel data (title, image_path, narration, dialogue).
-    :return: Path to the generated PDF.
+    :return: Absolute path to the generated PDF.
     """
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     filename = f"comic_{timestamp}.pdf"
-    export_dir = os.path.join("static", "exports")
+    
+    temp_dir = tempfile.gettempdir()
+    export_dir = os.path.join(temp_dir, "comiccraft", "exports")
     os.makedirs(export_dir, exist_ok=True)
     
     filepath = os.path.join(export_dir, filename)
@@ -35,9 +38,6 @@ def save_pdf(layout: list) -> str:
         
         # Image
         image_path = panel.get("image_path", "")
-        if image_path.startswith("/"):
-            # Convert web path to relative file path
-            image_path = image_path.lstrip("/")
             
         if os.path.exists(image_path):
             try:

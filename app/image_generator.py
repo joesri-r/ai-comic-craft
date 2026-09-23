@@ -195,50 +195,55 @@ def _make_demo_placeholder(filepath: str, panel_num: int = 1, prompt_text: str =
         print(f"[image_generator] Demo placeholder creation error: {e}")
 
 
+import tempfile
+import base64
+
 def generate_image(prompt: str, character_description: str, art_style: str,
-                   filename: str = None, panel_num: int = 1) -> str:
+                   filename: str = None, panel_num: int = 1) -> dict:
     """
     Generates a real AI comic story panel image.
-    Saves image to static/panels/ and returns relative web path '/static/panels/...'.
+    Saves image to temp directory and returns absolute file path and base64 data URI.
     """
     if not filename:
         unique_id = uuid.uuid4().hex[:6]
         filename = f"panel_{int(time.time())}_{panel_num}_{unique_id}.png"
 
-    filepath = os.path.join("static", "panels", filename)
+    temp_dir = tempfile.gettempdir()
+    filepath = os.path.join(temp_dir, "comiccraft", "panels", filename)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
     # Demo mode check
     if DEMO_MODE or not IMAGE_GENERATION_ENABLED:
         print(f"[image_generator] DEMO_MODE active. Using demo graphic for Panel {panel_num}.")
         _make_demo_placeholder(filepath, panel_num, prompt)
-        return f"/static/panels/{filename}"
+    else:
+        enhanced = enhance_prompt(prompt, character_description, art_style)
+        print(f"[image_generator] Generating story image for Panel {panel_num}...")
+        
+        success = False
+        if not success:
+            success = _try_openai_image_generation(enhanced, filepath)
+        if not success:
+            success = _try_gemini_image_generation(enhanced, filepath)
+        if not success:
+            success = _try_ai_story_generator(enhanced, filepath)
+        if not success:
+            success = fetch_and_stylize_external_image(prompt, character_description, art_style, filepath)
+            
+        if not success:
+            print(f"[image_generator] Creating panel placeholder for Panel {panel_num}.")
+            _make_demo_placeholder(filepath, panel_num, prompt)
 
-    enhanced = enhance_prompt(prompt, character_description, art_style)
-    print(f"[image_generator] Generating story image for Panel {panel_num}...")
-    print(f"  Prompt: {enhanced[:90]}...")
-    print(f"  Target: {filepath}")
+    # Read the file and convert to base64 data URI
+    try:
+        with open(filepath, "rb") as f:
+            b64_str = base64.b64encode(f.read()).decode('utf-8')
+            data_uri = f"data:image/png;base64,{b64_str}"
+    except Exception as e:
+        print(f"[image_generator] Error encoding base64: {e}")
+        data_uri = ""
 
-    # 1. Try OpenAI DALL-E Image Generation
-    if _try_openai_image_generation(enhanced, filepath):
-        return f"/static/panels/{filename}"
-
-    # 2. Try Gemini API Image Generation
-    if _try_gemini_image_generation(enhanced, filepath):
-        return f"/static/panels/{filename}"
-
-    # 3. Seamless AI Story Scene Image Generation (Pollinations Flux)
-    if _try_ai_story_generator(enhanced, filepath):
-        return f"/static/panels/{filename}"
-
-    # 4. External Story-Matching Image Sourcing (Unsplash / Openverse) + Comic Stylizing
-    if fetch_and_stylize_external_image(prompt, character_description, art_style, filepath):
-        return f"/static/panels/{filename}"
-
-    # 5. Final safety fallback
-    print(f"[image_generator] Creating panel placeholder for Panel {panel_num}.")
-    _make_demo_placeholder(filepath, panel_num, prompt)
-    return f"/static/panels/{filename}"
+    return {"file_path": filepath, "data_uri": data_uri}
 
 
 
