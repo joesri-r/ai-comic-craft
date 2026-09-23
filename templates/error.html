@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error — COMICCRAFT</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container text-center">
+        <header>
+            <span class="logo">COMICCRAFT</span>
+        </header>
+        <main class="card error-card">
+            <h1>⚠️ Something went wrong</h1>
+            <p class="error-msg">{{ error_message }}</p>
+            <p style="color: rgba(255,255,255,.6); margin-bottom: 1.5rem;">
+                Please check your API key and configuration, then try again.
+            </p>
+            <div class="actions" style="max-width:300px; margin: 0 auto;">
+                <a href="/" class="btn">← Back to Home</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

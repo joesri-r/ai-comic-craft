@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ComicCraft — Create stunning AI-powered comic stories in seconds. Choose your character, setting, and style.">
+    <title>COMICCRAFT — AI Comic Story Creator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="logo">COMICCRAFT</span>
+            <p class="tagline">✦ AI Comic Story Creator ✦</p>
+        </header>
+
+        <main class="card">
+            <form id="comicForm" action="/generate" method="POST" novalidate>
+
+                <div class="form-group">
+                    <label for="story_prompt">Story Prompt</label>
+                    <textarea id="story_prompt" name="story_prompt" rows="3" required
+                        placeholder="e.g. A brave fox discovers a hidden portal in the enchanted forest..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="character_name">Main Character Name</label>
+                    <input type="text" id="character_name" name="character_name" required
+                        placeholder="e.g. Leo">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="setting">Setting</label>
+                        <select id="setting" name="setting" required>
+                            <option value="Forest">🌲 Forest</option>
+                            <option value="School">🏫 School</option>
+                            <option value="City">🏙️ City</option>
+                            <option value="Space">🚀 Space</option>
+                            <option value="Village">🏡 Village</option>
+                            <option value="Fantasy Kingdom">🏰 Fantasy Kingdom</option>
+                            <option value="Ocean">🌊 Ocean</option>
+                            <option value="Desert">🏜️ Desert</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tone">Story Tone</label>
+                        <select id="tone" name="tone" required>
+                            <option value="Adventure">⚔️ Adventure</option>
+                            <option value="Funny">😄 Funny</option>
+                            <option value="Dramatic">🎭 Dramatic</option>
+                            <option value="Light-hearted">☀️ Light-hearted</option>
+                            <option value="Emotional">💙 Emotional</option>
+                            <option value="Poetic">🌸 Poetic</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="art_style">Art Style</label>
+                        <select id="art_style" name="art_style" required>
+                            <option value="Anime">🎌 Anime</option>
+                            <option value="Comic Book">💥 Comic Book</option>
+                            <option value="Cartoon">🎨 Cartoon</option>
+                            <option value="Manga">📖 Manga</option>
+                            <option value="Pixel Art">👾 Pixel Art</option>
+                            <option value="Realistic">📷 Realistic</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="generateBtn" class="btn">
+                    ✨ Generate My Comic
+                </button>
+            </form>
+
+            <div id="loading" class="hidden">
+                <div class="spinner"></div>
+                <p>Creating your comic with AI magic...<br>This may take 1–2 minutes ☕</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

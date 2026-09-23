@@ -1,0 +1,12 @@
+.env
+env/
+venv/
+__pycache__/
+*.pyc
+static/panels/*
+!static/panels/.gitkeep
+static/exports/*
+!static/exports/.gitkeep
+.idea/
+.vscode/
+test_*.png
