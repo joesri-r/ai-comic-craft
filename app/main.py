@@ -3,10 +3,13 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.config import validate_config
 
-# Create required directories automatically
-os.makedirs("static/panels", exist_ok=True)
-os.makedirs("static/exports", exist_ok=True)
-os.makedirs("static/fonts", exist_ok=True)
+# Create required directories automatically (safe for serverless)
+try:
+    os.makedirs("static/panels", exist_ok=True)
+    os.makedirs("static/exports", exist_ok=True)
+    os.makedirs("static/fonts", exist_ok=True)
+except Exception as e:
+    print(f"[main] Notice: directory creation skipped ({e})")
 
 try:
     validate_config()
