@@ -10,7 +10,12 @@ import urllib.parse
 import urllib.request
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from app.config import UNSPLASH_ACCESS_KEY, ENABLE_EXTERNAL_IMAGE_FALLBACK
+from app.config import (
+    UNSPLASH_ACCESS_KEY,
+    PEXELS_API_KEY,
+    PIXABAY_API_KEY,
+    ENABLE_EXTERNAL_IMAGE_FALLBACK
+)
 
 _BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 ComicCraft/1.0"
 
@@ -83,6 +88,88 @@ def search_unsplash_image(query: str) -> bytes:
                         return img_resp.read()
     except Exception as e:
         print(f"[external_images] Unsplash search note: {e}")
+
+    return None
+
+
+def search_pexels_image(query: str) -> bytes:
+    """
+    Search Pexels for an image matching the story using official API (requires PEXELS_API_KEY).
+    """
+    if not PEXELS_API_KEY:
+        return None
+
+    try:
+        encoded_q = urllib.parse.quote(query)
+        url = f"https://api.pexels.com/v1/search?query={encoded_q}&per_page=5"
+        req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA, "Authorization": PEXELS_API_KEY})
+
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            results = data.get("photos", [])
+            if results:
+                img_url = results[0]["src"].get("large") or results[0]["src"].get("medium")
+                if img_url:
+                    img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
+                    with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                        return img_resp.read()
+    except Exception as e:
+        print(f"[external_images] Pexels search note: {e}")
+
+    return None
+
+
+def search_pixabay_image(query: str) -> bytes:
+    """
+    Search Pixabay for an image matching the story using official API (requires PIXABAY_API_KEY).
+    """
+    if not PIXABAY_API_KEY:
+        return None
+
+    try:
+        encoded_q = urllib.parse.quote(query)
+        url = f"https://pixabay.com/api/?key={PIXABAY_API_KEY}&q={encoded_q}&image_type=photo&per_page=5"
+        req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
+
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            results = data.get("hits", [])
+            if results:
+                img_url = results[0].get("webformatURL") or results[0].get("largeImageURL")
+                if img_url:
+                    img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
+                    with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                        return img_resp.read()
+    except Exception as e:
+        print(f"[external_images] Pixabay search note: {e}")
+
+    return None
+
+
+def search_wikimedia_image(query: str) -> bytes:
+    """
+    Search Wikimedia Commons for an image. Free and no API key required.
+    """
+    try:
+        encoded_q = urllib.parse.quote(query)
+        url = f"https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch={encoded_q}&gsrnamespace=6&gsrlimit=3&prop=imageinfo&iiprop=url&format=json"
+        req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
+
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            pages = data.get("query", {}).get("pages", {})
+            for page_id, page_data in pages.items():
+                imageinfo = page_data.get("imageinfo", [])
+                if imageinfo:
+                    img_url = imageinfo[0].get("url")
+                    if img_url and img_url.lower().endswith((".jpg", ".jpeg", ".png")):
+                        img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
+                        with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                            data_bytes = img_resp.read()
+                            if len(data_bytes) > 2000:
+                                return data_bytes
+    except Exception as e:
+        print(f"[external_images] Wikimedia search note: {e}")
 
     return None
 
@@ -205,22 +292,34 @@ def fetch_and_stylize_external_image(
     source_name = None
 
     # 1. Try Unsplash (if key configured)
-    if UNSPLASH_ACCESS_KEY:
+    if UNSPLASH_ACCESS_KEY and not raw_bytes:
         raw_bytes = search_unsplash_image(story_keywords)
-        if raw_bytes:
-            source_name = "Unsplash"
+        if raw_bytes: source_name = "Unsplash"
 
-    # 2. Try Openverse (CC & Public Domain art/photos matching story)
+    # 2. Try Pexels (if key configured)
+    if PEXELS_API_KEY and not raw_bytes:
+        raw_bytes = search_pexels_image(story_keywords)
+        if raw_bytes: source_name = "Pexels"
+
+    # 3. Try Pixabay (if key configured)
+    if PIXABAY_API_KEY and not raw_bytes:
+        raw_bytes = search_pixabay_image(story_keywords)
+        if raw_bytes: source_name = "Pixabay"
+        
+    # 4. Try Wikimedia Commons (Free, no key required)
+    if not raw_bytes:
+        raw_bytes = search_wikimedia_image(story_keywords)
+        if raw_bytes: source_name = "Wikimedia Commons"
+
+    # 5. Try Openverse (CC & Public Domain art/photos matching story)
     if not raw_bytes:
         raw_bytes = search_openverse_image(story_keywords)
-        if raw_bytes:
-            source_name = "Openverse"
+        if raw_bytes: source_name = "Openverse"
 
-    # 3. Try Public Scenery Repository seeded with story context
+    # 6. Try Public Scenery Repository seeded with story context
     if not raw_bytes:
         raw_bytes = search_public_scenery_image(story_keywords)
-        if raw_bytes:
-            source_name = "Public Scenery"
+        if raw_bytes: source_name = "Public Scenery"
 
     if not raw_bytes:
         print(f"[external_images] No external image found for story: '{story_keywords}'")
