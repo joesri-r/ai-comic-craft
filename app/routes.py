@@ -117,26 +117,7 @@ async def test_image(prompt: str):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@router.get("/static/css/{filename}")
-async def serve_static_css(filename: str):
-    css_file = BASE_DIR / "static" / "css" / os.path.basename(filename)
-    if css_file.exists():
-        return FileResponse(str(css_file), media_type="text/css")
-    return HTMLResponse(content="/* CSS not found */", status_code=404)
 
-@router.get("/static/js/{filename}")
-async def serve_static_js(filename: str):
-    js_file = BASE_DIR / "static" / "js" / os.path.basename(filename)
-    if js_file.exists():
-        return FileResponse(str(js_file), media_type="application/javascript")
-    return HTMLResponse(content="// JS not found", status_code=404)
-
-@router.get("/static/panels/{filename}")
-async def serve_static_panel(filename: str):
-    panel_file = BASE_DIR / "static" / "panels" / os.path.basename(filename)
-    if panel_file.exists():
-        return FileResponse(str(panel_file), media_type="image/png")
-    return HTMLResponse(content="", status_code=404)
 
 @router.get("/download/{filename}")
 async def download_pdf(filename: str):
