@@ -16,7 +16,7 @@ from pathlib import Path
 router = APIRouter()
 
 # Setup templates with absolute path (required for Vercel serverless)
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def _generate_all_panel_images(outline, character_description, art_style):
