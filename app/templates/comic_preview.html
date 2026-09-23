@@ -4,10 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Comic Preview — COMICCRAFT</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --red: #ff4757; --red-dark: #c0392b; --navy: #1a1a2e; --navy-mid: #16213e;
+    --navy-card: #0f3460; --gold: #ffd32a; --white: #ffffff;
+    --gray-400: #adb5bd; --gray-600: #6c757d;
+    --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
+    --shadow-md: 0 6px 24px rgba(0,0,0,.18); --shadow-lg: 0 12px 40px rgba(0,0,0,.25);
+    --transition: .25s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--navy); color: var(--white);
+    line-height: 1.6; min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,71,87,.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,211,42,.08) 0%, transparent 50%);
+    z-index: -1; pointer-events: none;
+}
+.container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 1rem; }
+header { text-align: center; padding: 2rem 0 1.5rem; }
+.logo {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.8rem, 10vw, 5rem);
+    letter-spacing: 4px; color: var(--red);
+    text-shadow: 3px 3px 0 var(--gold), 6px 6px 0 rgba(0,0,0,.3);
+    line-height: 1; display: block;
+    animation: logoEntrance .6s ease-out both;
+}
+@keyframes logoEntrance {
+    from { opacity: 0; transform: translateY(-20px) scale(.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+header .tagline {
+    font-size: clamp(.85rem, 3vw, 1.1rem); color: var(--gray-400);
+    font-weight: 500; letter-spacing: 2px; text-transform: uppercase; margin-top: .5rem;
+}
+.comic-layout {
+    display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 2rem;
+}
+@media (min-width: 600px) { .comic-layout { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .comic-layout { grid-template-columns: repeat(3, 1fr); } }
+.comic-card {
+    background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1);
+    border-radius: var(--radius-md); overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition), box-shadow var(--transition);
+    display: flex; flex-direction: column;
+}
+.comic-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.panel-header {
+    background: linear-gradient(135deg, var(--navy-card), var(--navy-mid));
+    padding: .75rem 1rem; display: flex; align-items: center; gap: .75rem;
+    border-bottom: 2px solid var(--red);
+}
+.panel-number {
+    background: var(--red); color: var(--white); font-size: .75rem;
+    font-weight: 800; padding: .2rem .55rem; border-radius: 4px;
+    letter-spacing: .5px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+}
+.panel-header h2 {
+    font-size: .95rem; font-weight: 700; color: var(--white);
+    line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.panel-image-container {
+    width: 100%; aspect-ratio: 1 / 1;
+    background: var(--navy-mid); overflow: hidden; flex-shrink: 0;
+}
+.panel-image-container img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .4s ease;
+}
+.comic-card:hover .panel-image-container img { transform: scale(1.04); }
+.panel-content {
+    padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: .5rem;
+}
+.panel-content p { font-size: .88rem; line-height: 1.5; color: rgba(255,255,255,.85); }
+.panel-content strong { color: var(--gray-400); font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+.caption {
+    font-style: italic; background: rgba(255,255,255,.06);
+    border-left: 3px solid var(--gold);
+    padding: .5rem .75rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.dialogue { font-weight: 700; color: var(--red) !important; }
+.narration { color: rgba(255,255,255,.7) !important; }
+.actions {
+    display: flex; flex-direction: column; gap: .75rem;
+    max-width: 420px; margin: 0 auto 2rem; padding: 0 .5rem;
+}
+@media (min-width: 480px) { .actions { flex-direction: row; } .actions .btn { flex: 1; } }
+.btn {
+    display: block; width: 100%; padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: var(--white); border: none; border-radius: var(--radius-sm);
+    font-size: 1.05rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px;
+    text-align: center; text-decoration: none;
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative; overflow: hidden;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,71,87,.4); }
+.btn:active { transform: translateY(0); }
+.btn-secondary {
+    background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2); margin-top: .75rem;
+}
+.btn-secondary:hover { background: rgba(255,255,255,.18); box-shadow: none; }
+    </style>
 </head>
 <body>
-    <div class="container comic-container">
+    <div class="container">
         <header>
             <span class="logo">YOUR COMIC</span>
             <p class="tagline">✦ AI Generated Story ✦</p>

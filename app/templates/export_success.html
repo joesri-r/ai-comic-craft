@@ -4,16 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Export Success - COMICCRAFT</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --red: #ff4757; --red-dark: #c0392b; --navy: #1a1a2e;
+    --gold: #ffd32a; --white: #ffffff; --gray-400: #adb5bd;
+    --radius-sm: 8px; --radius-lg: 20px;
+    --shadow-md: 0 6px 24px rgba(0,0,0,.18);
+    --transition: .25s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--navy); color: var(--white);
+    line-height: 1.6; min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,71,87,.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,211,42,.08) 0%, transparent 50%);
+    z-index: -1; pointer-events: none;
+}
+.container { width: 100%; max-width: 960px; margin: 0 auto; padding: 1rem; }
+.text-center { text-align: center; }
+.card {
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-md);
+}
+.success-card { text-align: center; padding: 3rem 1.5rem; }
+.success-card h1 {
+    font-family: 'Bangers', cursive;
+    color: #2ecc71; font-size: clamp(1.8rem, 6vw, 3rem); margin-bottom: 1rem;
+}
+.success-card p { color: rgba(255,255,255,.7); margin-bottom: 1.5rem; }
+.actions { display: flex; flex-direction: column; gap: .75rem; max-width: 300px; margin: 0 auto; }
+.btn {
+    display: block; width: 100%; padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: var(--white); border: none; border-radius: var(--radius-sm);
+    font-size: 1.05rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px;
+    text-align: center; text-decoration: none;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,71,87,.4); }
+    </style>
 </head>
 <body>
     <div class="container text-center">
         <main class="card success-card">
             <h1>🎉 Comic Exported Successfully!</h1>
             <p>Your AI-powered comic has been successfully created and downloaded.</p>
-            
+
             <div class="actions">
-                <a href="/" class="btn btn-primary">Create Another Comic</a>
+                <a href="/" class="btn">Create Another Comic</a>
             </div>
         </main>
     </div>
