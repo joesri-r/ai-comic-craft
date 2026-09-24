@@ -80,13 +80,17 @@ def _try_gemini_image_generation(prompt: str, filepath: str) -> bool:
     if not client:
         return False
 
-    # Gemini image models to try
-    models_to_try = [
-        "gemini-2.5-flash-image",
-        "gemini-3.1-flash-image",
-        "gemini-3.1-flash-lite-image",
-        "gemini-3-pro-image",
-    ]
+    # Gemini image models to try (limited on Vercel to save time)
+    import os as _os
+    if _os.getenv("VERCEL"):
+        models_to_try = ["gemini-2.5-flash-image"]
+    else:
+        models_to_try = [
+            "gemini-2.5-flash-image",
+            "gemini-3.1-flash-image",
+            "gemini-3.1-flash-lite-image",
+            "gemini-3-pro-image",
+        ]
 
     for model_name in models_to_try:
         try:
@@ -129,7 +133,7 @@ def _try_ai_story_generator(prompt: str, filepath: str) -> bool:
                 url,
                 headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ComicCraft/1.0"}
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = resp.read()
                 if data and len(data) > 1000:
                     with open(filepath, "wb") as f:

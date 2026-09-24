@@ -1,5 +1,4 @@
 import os
-import concurrent.futures
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -20,22 +19,42 @@ BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def _generate_all_panel_images(outline, character_description, art_style):
-    """Generate images for all panels with concurrency control and staggering to prevent 429s."""
+    """Generate images for all panels sequentially with time budget awareness for Vercel."""
     import time
+    import os
 
-    def _gen_one(idx, panel):
-        if idx > 0:
-            time.sleep(idx * 0.8)
+    # Vercel has strict timeouts: 10s hobby, 60s pro. Budget accordingly.
+    is_vercel = bool(os.getenv("VERCEL"))
+    max_total_seconds = 50 if is_vercel else 300  # leave 10s buffer on Vercel
+    start_time = time.time()
+
+    results = []
+    for idx, panel in enumerate(outline):
+        elapsed = time.time() - start_time
+        remaining = max_total_seconds - elapsed
+
+        # If running low on time, use demo placeholders for remaining panels
+        if remaining < 8:
+            print(f"[routes] Time budget low ({remaining:.1f}s left). Using placeholder for Panel {idx + 1}.")
+            from app.image_generator import generate_image, _make_demo_placeholder
+            import tempfile, uuid, base64
+            filename = f"panel_{int(time.time())}_{idx + 1}_{uuid.uuid4().hex[:6]}.png"
+            filepath = os.path.join(tempfile.gettempdir(), "comiccraft", "panels", filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            _make_demo_placeholder(filepath, idx + 1, panel.get("image_prompt", ""))
+            try:
+                with open(filepath, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode("utf-8")
+                    data_uri = f"data:image/png;base64,{b64}"
+            except Exception:
+                data_uri = ""
+            results.append({"file_path": filepath, "data_uri": data_uri})
+            continue
+
         img_prompt = panel.get("image_prompt", character_description)
         path = generate_image(img_prompt, character_description, art_style, panel_num=idx + 1)
-        return idx, path
+        results.append(path)
 
-    results = [None] * len(outline)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        futures = [executor.submit(_gen_one, i, p) for i, p in enumerate(outline)]
-        for f in concurrent.futures.as_completed(futures):
-            idx, path = f.result()
-            results[idx] = path
     return results
 
 @router.get("/", response_class=HTMLResponse)

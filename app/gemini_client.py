@@ -20,8 +20,13 @@ from app.config import (
 from app.openai_client import generate_openai_text
 
 # ── Constants ──
-MAX_RETRIES = 3
-INITIAL_BACKOFF_SECONDS = 2  # doubles each retry: 2 → 4 → 8
+import os as _os
+if _os.getenv("VERCEL"):
+    MAX_RETRIES = 1
+    INITIAL_BACKOFF_SECONDS = 1
+else:
+    MAX_RETRIES = 3
+    INITIAL_BACKOFF_SECONDS = 2  # doubles each retry: 2 → 4 → 8
 
 # Substrings that indicate a temporary/retriable server error
 _RETRIABLE_MARKERS = ("503", "unavailable", "high demand", "temporarily")

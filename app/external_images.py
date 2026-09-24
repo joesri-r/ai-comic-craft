@@ -77,14 +77,14 @@ def search_unsplash_image(query: str) -> bytes:
         url = f"https://api.unsplash.com/search/photos?query={encoded_q}&per_page=5&orientation=squarish&client_id={UNSPLASH_ACCESS_KEY}"
         req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
 
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             results = data.get("results", [])
             if results:
                 img_url = results[0]["urls"].get("regular") or results[0]["urls"].get("small")
                 if img_url:
                     img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
-                    with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                    with urllib.request.urlopen(img_req, timeout=8) as img_resp:
                         return img_resp.read()
     except Exception as e:
         print(f"[external_images] Unsplash search note: {e}")
@@ -104,14 +104,14 @@ def search_pexels_image(query: str) -> bytes:
         url = f"https://api.pexels.com/v1/search?query={encoded_q}&per_page=5"
         req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA, "Authorization": PEXELS_API_KEY})
 
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             results = data.get("photos", [])
             if results:
                 img_url = results[0]["src"].get("large") or results[0]["src"].get("medium")
                 if img_url:
                     img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
-                    with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                    with urllib.request.urlopen(img_req, timeout=8) as img_resp:
                         return img_resp.read()
     except Exception as e:
         print(f"[external_images] Pexels search note: {e}")
@@ -131,14 +131,14 @@ def search_pixabay_image(query: str) -> bytes:
         url = f"https://pixabay.com/api/?key={PIXABAY_API_KEY}&q={encoded_q}&image_type=photo&per_page=5"
         req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
 
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             results = data.get("hits", [])
             if results:
                 img_url = results[0].get("webformatURL") or results[0].get("largeImageURL")
                 if img_url:
                     img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
-                    with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                    with urllib.request.urlopen(img_req, timeout=8) as img_resp:
                         return img_resp.read()
     except Exception as e:
         print(f"[external_images] Pixabay search note: {e}")
@@ -155,7 +155,7 @@ def search_wikimedia_image(query: str) -> bytes:
         url = f"https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch={encoded_q}&gsrnamespace=6&gsrlimit=3&prop=imageinfo&iiprop=url&format=json"
         req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
 
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             pages = data.get("query", {}).get("pages", {})
             for page_id, page_data in pages.items():
@@ -164,7 +164,7 @@ def search_wikimedia_image(query: str) -> bytes:
                     img_url = imageinfo[0].get("url")
                     if img_url and img_url.lower().endswith((".jpg", ".jpeg", ".png")):
                         img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
-                        with urllib.request.urlopen(img_req, timeout=15) as img_resp:
+                        with urllib.request.urlopen(img_req, timeout=8) as img_resp:
                             data_bytes = img_resp.read()
                             if len(data_bytes) > 2000:
                                 return data_bytes
@@ -184,7 +184,7 @@ def search_openverse_image(query: str) -> bytes:
         url = f"https://api.openverse.org/v1/images/?q={encoded_q}&page_size=5"
         req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
 
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             results = data.get("results", [])
             for item in results:
@@ -193,7 +193,7 @@ def search_openverse_image(query: str) -> bytes:
                     continue
                 try:
                     img_req = urllib.request.Request(img_url, headers={"User-Agent": _BROWSER_UA})
-                    with urllib.request.urlopen(img_req, timeout=12) as img_resp:
+                    with urllib.request.urlopen(img_req, timeout=8) as img_resp:
                         content_type = img_resp.headers.get("content-type", "")
                         if "image" in content_type or img_url.endswith((".jpg", ".jpeg", ".png", ".webp")):
                             data_bytes = img_resp.read()
@@ -215,7 +215,7 @@ def search_public_scenery_image(query: str) -> bytes:
         seed = urllib.parse.quote(query.replace(" ", "-").lower() or "comic-scene")
         url = f"https://picsum.photos/seed/{seed}/512/512"
         req = urllib.request.Request(url, headers={"User-Agent": _BROWSER_UA})
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = resp.read()
             if data and len(data) > 1000:
                 return data
