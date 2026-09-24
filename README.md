@@ -1,5 +1,9 @@
 # ComicCraft - AI Comic Story Creator
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-brightgreen?style=for-the-badge&logo=vercel)](https://ai-comic-craft.vercel.app)
+
+> **🚀 Live Web App:** [https://ai-comic-craft.vercel.app](https://ai-comic-craft.vercel.app)
+
 ComicCraft is a full-stack Python web application that uses Google's Gemini models and Stable Diffusion to generate completely original, 5-panel comic stories based on user prompts.
 
 ## Features
